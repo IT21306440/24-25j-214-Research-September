@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload & Prediction</title>
+    
+    <!-- ✅ Bootstrap & Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ✅ Full Page Layout */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            max-width: 550px;
+            margin-top: 60px;
+            flex-grow: 1;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .progress {
+            height: 12px;
+            border-radius: 6px;
+        }
+        #imagePreview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            display: none;
+            margin-top: 15px;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ✅ Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/">Solar Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Solar Locations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/battery">Battery Optimization</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/demand">Energy Demand Trends</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/integrated">Integrated System</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ✅ Upload Section -->
+    <div class="container">
+        <div class="card text-center">
+            <h2 class="text-primary fw-bold mb-3">🔍 Upload an Image for Prediction</h2>
+            
+            <!-- ✅ Upload Form -->
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="imageInput" name="file" accept="image/*" class="form-control mb-3" required>
+                <button type="submit" class="btn btn-primary w-100 fw-bold">Upload & Predict</button>
+            </form>
+
+            <!-- ✅ Image Preview -->
+            <img id="imagePreview" class="img-fluid">
+
+            <!-- ✅ Prediction Result -->
+            <h3 id="result" class="mt-3 text-center"></h3>
+
+            <!-- ✅ Confidence Progress Bar -->
+            <div class="progress mt-3">
+                <div id="confidenceFill" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
+            <p id="confidenceText" class="mt-2 text-center fw-bold"></p>
+        </div>
+    </div>
+
+    <!-- ✅ Footer -->
+    <div class="footer">
+        <p class="m-0">© 2025 Solar Dashboard | Image Prediction System</p>
+    </div>
+
+    <!-- ✅ JavaScript Logic -->
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            let formData = new FormData();
+            let fileInput = document.getElementById("imageInput").files[0];
+
+            if (!fileInput) {
+                alert("Please select an image first!");
+                return;
+            }
+
+            // ✅ Show Image Preview
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let imagePreview = document.getElementById("imagePreview");
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = "block";
+            };
+            reader.readAsDataURL(fileInput);
+
+            formData.append("file", fileInput);
+
+            let response = await fetch("/predict", {
+                method: "POST",
+                body: formData
+            });
+
+            let result = await response.json();
+
+            if (response.ok) {
+                let confidencePercentage = (result.confidence * 100).toFixed(2);
+                let predictedClass = result.predicted_class;
+
+                // ✅ Replace "Dusty" with "Dust"
+                if (predictedClass === "Dusty") {
+                    predictedClass = "Dust";
+                }
+
+                let message = `Predicted Class: <strong>${predictedClass}</strong>`;
+
+                if (predictedClass === "Clean" && confidencePercentage >= 90) {
+                    message = `<strong class='text-success'>✔ Clean</strong> (Confidence: ${confidencePercentage}%)`;
+                } else if (predictedClass === "Dust" && confidencePercentage >= 90) {
+                    message = `<strong class='text-danger'>⚠ Dirty - Clean Needed</strong> (Confidence: ${confidencePercentage}%)`;
+                }
+
+                document.getElementById("result").innerHTML = message;
+                document.getElementById("confidenceText").innerText = `Confidence Level: ${confidencePercentage}%`;
+
+                // ✅ Update Progress Bar
+                updateConfidenceBar(confidencePercentage, predictedClass);
+            } else {
+                document.getElementById("result").innerHTML = `❌ Error: ${result.error}`;
+            }
+        });
+
+        function updateConfidenceBar(confidence, predictedClass) {
+            let confidenceFill = document.getElementById("confidenceFill");
+            confidenceFill.style.width = confidence + "%";
+
+            // ✅ Remove previous classes
+            confidenceFill.classList.remove("bg-primary", "bg-danger", "bg-success");
+
+            // ✅ Set the correct color
+            if (predictedClass === "Dust" && confidence >= 90) {
+                confidenceFill.classList.add("bg-danger"); // Red for high confidence Dust images
+            } else if (predictedClass === "Clean" && confidence >= 90) {
+                confidenceFill.classList.add("bg-success"); // Green for high confidence Clean images
+            } else {
+                confidenceFill.classList.add("bg-primary"); // Default blue for lower confidence levels
+            }
+        }
+    </script>
+
+    <!-- ✅ Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

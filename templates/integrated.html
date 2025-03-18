@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated System Dashboard</title>
+
+    <!-- ✅ Bootstrap & Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+
+    <style>
+        /* ✅ Full-Width Layout */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .container-fluid {
+            padding: 20px 40px; /* ✅ Add padding for a clean layout */
+            max-width: 100%;
+        }
+        .section-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            padding: 20px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: 100%;
+        }
+        canvas {
+            width: 100% !important;
+            height: 350px !important; /* ✅ Adjust chart height */
+        }
+        .loading {
+            display: none;
+            color: red;
+            font-weight: bold;
+        }
+        #map {
+            height: 450px;
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ✅ Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/">Solar Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Solar Locations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/battery">Battery Optimization</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/demand">Energy Demand Trends</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/integrated">Integrated System</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/dust">Solar Maintainance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inverter">Invertor Details</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ✅ Full-Width Container -->
+    <div class="container-fluid">
+        <div class="section-card">
+            <h1 class="mb-4 text-primary fw-bold text-center">Integrated System Dashboard</h1>
+
+            <!-- ✅ Dropdown Filters -->
+            <div class="row mb-3">
+                <div class="col-md-2">
+                    <label for="year" class="form-label">Select Year:</label>
+                    <select id="year" class="form-select"></select>
+                </div>
+                <div class="col-md-2">
+                    <label for="month" class="form-label">Select Month:</label>
+                    <select id="month" class="form-select"></select>
+                </div>
+                <div class="col-md-2">
+                    <label for="location" class="form-label">Select Existing Location:</label>
+                    <select id="location" class="form-select"></select>
+                </div>
+                <div class="col-md-2">
+                    <label for="futureLocation" class="form-label">Select Future Location:</label>
+                    <select id="futureLocation" class="form-select"></select>
+                </div>
+                <div class="col-md-2">
+                    <label for="timeFrame" class="form-label">Select Time Frame:</label>
+                    <select id="timeFrame" class="form-select">
+                        <option value="daily">Daily</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ✅ Map for Best Location -->
+            <h4 class="text-dark fw-bold text-center">Recommended Solar Plant Location: <span id="bestLocation" class="fw-bold text-primary">Loading...</span></h4>
+            <div id="map"></div>
+
+            <!-- ✅ Charts Section (3 per row) -->
+            <div class="row mt-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="chart-container">
+                        <h4 class="text-dark fw-bold">Solar Irradiance Forecast</h4>
+                        <canvas id="solarIrradianceChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="chart-container">
+                        <h4 class="text-dark fw-bold">Future Solar Irradiance Forecast</h4>
+                        <canvas id="futureSolarIrradianceChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <div class="chart-container">
+                        <h4 class="text-dark fw-bold">Total Forecasted Solar Power</h4>
+                        <canvas id="solarPowerForecastChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="chart-container">
+                        <h4 class="text-dark fw-bold">Electricity Demand Trends</h4>
+                        <canvas id="electricityDemandChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="chart-container">
+                        <h4 class="text-dark fw-bold">Battery Revenue Analysis</h4>
+                        <canvas id="batteryRevenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <div class="chart-container">
+                        <h4 class="text-dark fw-bold">Optimized Daily Power Release</h4>
+                        <canvas id="optimizedDailyPowerChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ✅ Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='integrated.js') }}"></script>
+
+</body>
+</html>
