@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inverter Fault Detection</title>
+
+    <!-- ✅ Bootstrap & Libraries -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        /* ✅ Full Page Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .graph-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .graph-card:hover {
+            transform: translateY(-5px);
+        }
+        .spinner-border {
+            display: block;
+            margin: auto;
+        }
+        .see-more-btn {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ✅ Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/">Solar Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Solar Locations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/battery">Battery Optimization</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/demand">Energy Demand Trends</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/integrated">Integrated System</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ✅ Main Container -->
+    <div class="container">
+        <h2 class="text-center text-primary fw-bold mb-4">🔧 Inverter Fault Detection Dashboard</h2>
+
+        <!-- ✅ Filter Form -->
+        <form method="POST" class="bg-white p-4 rounded shadow">
+            <h5 class="text-secondary">📌 Filter Data</h5>
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label for="inverter" class="form-label fw-bold">Select Inverter:</label>
+                    <select name="inverter" class="form-select">
+                        <option value="">All Inverters</option>
+                        {% for inverter in inverters %}
+                            <option value="{{ inverter }}" {% if inverter == selected_inverter %}selected{% endif %}>Inverter {{ loop.index }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label for="date" class="form-label fw-bold">Select Date:</label>
+                    <select name="date" class="form-select">
+                        <option value="">All Dates</option>
+                        {% for date in dates %}
+                            <option value="{{ date }}" {% if date == selected_date %}selected{% endif %}>{{ date }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">🔍 Filter</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- ✅ Graphs Display -->
+        <div id="graph-container" class="row g-4 mt-4">
+            {% if graphs %}
+                {% for graph in graphs %}
+                    <div class="col-md-6 col-lg-4 graph-card d-none">
+                        <div class="card shadow p-3">
+                            <h5 class="text-secondary text-center">⚡ Inverter {{ loop.index }} | 📅 Date: {{ graph.date }}</h5>
+                            <div class="d-flex justify-content-center">
+                                <div class="spinner-border text-primary" role="status" id="loader{{ loop.index }}"></div>
+                            </div>
+                            <img data-src="{{ url_for('static', filename='inverter_fault_graphs/' + graph.file) }}" 
+                                 class="img-fluid rounded d-none lazy-load" 
+                                 id="graphImage{{ loop.index }}" 
+                                 alt="Fault Graph">
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <div class="alert alert-warning">⚠️ No data available for the selected filters. Please try a different selection.</div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ✅ See More Button -->
+        {% if graphs|length > 6 %}
+            <div class="see-more-btn">
+                <button id="see-more-btn" class="btn btn-outline-primary">See More Graphs ⬇️</button>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ✅ Footer -->
+    <div class="footer">
+        <p class="m-0">© 2025 Solar Dashboard | Inverter Fault Detection</p>
+    </div>
+
+    <!-- ✅ JavaScript for Lazy Loading & Pagination -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let graphs = document.querySelectorAll(".graph-card");
+            let seeMoreBtn = document.getElementById("see-more-btn");
+            let currentIndex = 0;
+            let graphsPerPage = 6;
+
+            function showNextGraphs() {
+                for (let i = currentIndex; i < currentIndex + graphsPerPage && i < graphs.length; i++) {
+                    graphs[i].classList.remove("d-none");
+
+                    let img = graphs[i].querySelector(".lazy-load");
+                    let loader = graphs[i].querySelector(".spinner-border");
+
+                    // Show loader before image loads
+                    loader.style.display = "block";
+
+                    // Lazy load image
+                    let imageSrc = img.getAttribute("data-src");
+                    if (imageSrc) {
+                        img.src = imageSrc;
+                        img.onload = function () {
+                            loader.style.display = "none";
+                            img.classList.remove("d-none");
+                        };
+                    }
+                }
+                currentIndex += graphsPerPage;
+
+                // Hide button if no more graphs
+                if (currentIndex >= graphs.length) {
+                    seeMoreBtn.style.display = "none";
+                }
+            }
+
+            // Show first set of graphs
+            showNextGraphs();
+
+            // Add event listener for "See More Graphs" button
+            if (seeMoreBtn) {
+                seeMoreBtn.addEventListener("click", showNextGraphs);
+            }
+        });
+    </script>
+
+</body>
+</html>

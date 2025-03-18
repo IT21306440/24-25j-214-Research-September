@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Irradiance Forecast</title>
+    
+    <!-- ✅ Bootstrap & Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+
+    <style>
+        /* ✅ Full-Width Layout */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .container-fluid {
+            padding: 20px 40px;
+            max-width: 100%;
+        }
+        .section-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            padding: 20px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            max-width: 900px; /* ✅ Ensures the chart is centered */
+            margin: 0 auto; /* ✅ Centers the chart */
+        }
+        #map {
+            height: 450px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        canvas {
+            width: 100% !important;
+            height: 400px !important; /* ✅ Adjusted for better display */
+        }
+        .loading {
+            display: none;
+            color: red;
+            font-weight: bold;
+        }
+        .spinner-border {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+        }
+        .dropdown-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .dropdown-container select {
+            width: 250px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ✅ Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/">Solar Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="/">Solar Locations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/battery">Battery Optimization</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/demand">Energy Demand Trends</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/integrated">Integrated System Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/dust">Solar Maintainance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inverter">Invertor Details</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ✅ Full-Width Container -->
+    <div class="container-fluid">
+        <div class="section-card">
+            <h1 class="mb-4 text-primary fw-bold text-center"> Solar Irradiance Forecast</h1>
+
+            <!-- ✅ Year Selection -->
+            <div class="dropdown-container">
+                <label for="year" class="form-label fw-bold">Select Year:</label>
+                <select id="year" class="form-select d-inline-block">
+                    {% if years %}
+                        {% for year in years %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="" disabled>No Data Available</option>
+                    {% endif %}
+                </select>
+            </div>
+
+            <!-- ✅ Best Location Info -->
+            <h4 class="text-center my-3 text-dark fw-bold">Best Location for <span id="selectedYear"></span>: 
+                <span id="bestLocation" class="fw-bold text-primary">Loading...</span>
+            </h4>
+
+            <!-- ✅ Loading Indicator for Best Location -->
+            <div id="loadingLocation" class="loading text-center">
+                <div class="spinner-border text-danger"></div> Fetching best location...
+            </div>
+
+            <!-- ✅ Map -->
+            <div id="map"></div>
+
+            <!-- ✅ Month Selection -->
+            <div class="dropdown-container">
+                <label for="month" class="form-label fw-bold">Select Month:</label>
+                <select id="month" class="form-select d-inline-block">
+                    <option value="" disabled>Loading...</option>
+                </select>
+            </div>
+
+            <!-- ✅ Loading Indicator for Chart -->
+            <div id="loadingChart" class="loading text-center">
+                <div class="spinner-border text-primary"></div> Fetching irradiance data...
+            </div>
+
+            <!-- ✅ Forecast Chart - Centered -->
+            <div class="chart-container">
+                <h4 class="text-dark fw-bold text-center">Solar Irradiance Trend</h4>
+                <canvas id="forecastChart"></canvas>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ✅ Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+</body>
+</html>
