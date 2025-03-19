@@ -71,7 +71,7 @@
 </head>
 <body>
 
-    <!-- ✅ Navbar -->
+    <!--  Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="/">Solar Dashboard</a>
@@ -92,12 +92,12 @@
         </div>
     </nav>
 
-    <!-- ✅ Full-Width Container -->
+    <!--  Full-Width Container -->
     <div class="container-fluid">
         <div class="section-card">
             <h1 class="mb-4 text-primary fw-bold text-center"> Solar Irradiance Forecast</h1>
 
-            <!-- ✅ Year Selection -->
+            <!--  Year Selection -->
             <div class="dropdown-container">
                 <label for="year" class="form-label fw-bold">Select Year:</label>
                 <select id="year" class="form-select d-inline-block">
@@ -111,20 +111,20 @@
                 </select>
             </div>
 
-            <!-- ✅ Best Location Info -->
+            <!--  Best Location Info -->
             <h4 class="text-center my-3 text-dark fw-bold">Best Location for <span id="selectedYear"></span>: 
                 <span id="bestLocation" class="fw-bold text-primary">Loading...</span>
             </h4>
 
-            <!-- ✅ Loading Indicator for Best Location -->
+            <!--  Loading Indicator for Best Location -->
             <div id="loadingLocation" class="loading text-center">
                 <div class="spinner-border text-danger"></div> Fetching best location...
             </div>
 
-            <!-- ✅ Map -->
+            <!-- Map -->
             <div id="map"></div>
 
-            <!-- ✅ Month Selection -->
+            <!--  Month Selection -->
             <div class="dropdown-container">
                 <label for="month" class="form-label fw-bold">Select Month:</label>
                 <select id="month" class="form-select d-inline-block">
@@ -132,12 +132,12 @@
                 </select>
             </div>
 
-            <!-- ✅ Loading Indicator for Chart -->
+            <!--  Loading Indicator for Chart -->
             <div id="loadingChart" class="loading text-center">
                 <div class="spinner-border text-primary"></div> Fetching irradiance data...
             </div>
 
-            <!-- ✅ Forecast Chart - Centered -->
+            <!--  Forecast Chart - Centered -->
             <div class="chart-container">
                 <h4 class="text-dark fw-bold text-center">Solar Irradiance Trend</h4>
                 <canvas id="forecastChart"></canvas>
@@ -146,7 +146,7 @@
         </div>
     </div>
 
-    <!-- ✅ Bootstrap JS -->
+    <!--  Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 

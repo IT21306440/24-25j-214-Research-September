@@ -11,9 +11,9 @@ $(document).ready(function () {
 
     let chartInstances = {};
 
-    // ✅ Load dropdowns and initial data on page load
+    //  Load dropdowns and initial data on page load
     $.when(loadAvailableLocations(), loadDropdowns(), loadFutureLocations()).done(function () {
-        setTimeout(loadData, 500); // ✅ Ensure data loads even if dropdowns reset
+        setTimeout(loadData, 500); //  Ensure data loads even if dropdowns reset
     });
     
     
@@ -25,15 +25,15 @@ $(document).ready(function () {
         let month = $("#month").val();
         let location = $("#location").val();
         
-        console.log("🌍 Selected Location:", location);  // ✅ Debugging line
+        console.log(" Selected Location:", location);  //  Debugging line
         
-        loadData();  // ✅ Ensure data updates when location changes
-        loadSolarPowerForecast(year, month);  // ✅ Reload solar power forecast
+        loadData();  //  Ensure data updates when location changes
+        loadSolarPowerForecast(year, month);  //  Reload solar power forecast
     });
     
     
  
-    // ✅ Restore last selected values from localStorage (if available)
+    //  Restore last selected values from localStorage (if available)
 $("#year").val(localStorage.getItem("selectedYear") || $("#year option:first").val());
 $("#month").val(localStorage.getItem("selectedMonth") || $("#month option:first").val());
 $("#location").val(localStorage.getItem("selectedLocation") || $("#location option:first").val());
@@ -53,7 +53,7 @@ $("#timeFrame").val(localStorage.getItem("selectedTimeFrame") || $("#timeFrame o
         let timeFrame = $("#timeFrame").val();
 
 
-        // ✅ Save user-selected values to localStorage
+        //  Save user-selected values to localStorage
 localStorage.setItem("selectedYear", year);
 localStorage.setItem("selectedMonth", month);
 localStorage.setItem("selectedLocation", location);
@@ -61,9 +61,9 @@ localStorage.setItem("selectedFutureLocation", futureLocation);
 localStorage.setItem("selectedTimeFrame", timeFrame);
 
     
-        // ✅ Validate input parameters
+        //  Validate input parameters
         if (!year || !month || !location || !timeFrame) {
-            console.error("❌ Missing parameters:", { year, month, location, timeFrame });
+            console.error(" Missing parameters:", { year, month, location, timeFrame });
             return;
         }
     
@@ -77,96 +77,96 @@ localStorage.setItem("selectedTimeFrame", timeFrame);
             "September": "09", "October": "10", "November": "11", "December": "12"
         };
     
-        // ✅ Convert month name to number
+        //  Convert month name to number
         let formattedMonth = monthMapping[month] || "01"; 
         let dateString = `${year}-${formattedMonth}-01`; // Use the first day of the month
         console.log("📡 Fetching Power Data for Date:", dateString, " Time Frame:", timeFrame);
     
-        // ✅ Standardize Location Input (Trim spaces and lowercase for consistency)
+        //  Standardize Location Input (Trim spaces and lowercase for consistency)
         location = location.trim().toLowerCase();
     
-        // ✅ Fetch Solar Irradiance Data
-        // ✅ Standardize Location Input (Trim spaces & lowercase)
+        // Fetch Solar Irradiance Data
+        //  Standardize Location Input (Trim spaces & lowercase)
         location = location.trim().toLowerCase();
 
-// ✅ Fetch Solar Irradiance Data
+//  Fetch Solar Irradiance Data
         $.post("/get_solar_irradiance", { year, month, location, time_frame: timeFrame }, function (data) {
 
             if (data.error) {
-                console.error("❌ Error fetching solar irradiance:", data.error);
+                console.error(" Error fetching solar irradiance:", data.error);
                 $("#solarIrradianceChart").parent().html("<p class='text-danger'>No data available.</p>");
             } else {
                 updateChart("solarIrradianceChart", `Solar Irradiance Forecast (${location})`, data.dates, data.irradiance, "orange", "rgba(255, 165, 0, 0.3)");
             }
         }).fail(function (xhr) {
-            console.error("❌ Failed to fetch solar irradiance data. Status:", xhr.status, "Response:", xhr.responseText);
+            console.error(" Failed to fetch solar irradiance data. Status:", xhr.status, "Response:", xhr.responseText);
         });
     
         // ✅ Fetch Future Solar Irradiance if a future location is selected
         if (futureLocation) {
-            console.log(`📡 Fetching Future Solar Irradiance for: ${futureLocation}, Year: ${year}, Month: ${month}`);
+            console.log(` Fetching Future Solar Irradiance for: ${futureLocation}, Year: ${year}, Month: ${month}`);
     
             $.post("/get_future_solar_irradiance", { year, month, location: futureLocation }, function (data) {
                 if (data.error) {
-                    console.error("❌ Error fetching future solar irradiance:", data.error);
+                    console.error(" Error fetching future solar irradiance:", data.error);
                     $("#futureSolarIrradianceChart").parent().html("<p class='text-danger'>No data available.</p>");
                 } else {
                     updateChart("futureSolarIrradianceChart", "Future Solar Irradiance (W/m²)", data.dates, data.forecasted_irradiance);
                 }
             }).fail(function () {
-                console.error("❌ Failed to fetch future solar irradiance data.");
+                console.error(" Failed to fetch future solar irradiance data.");
             });
         }
     
-        // ✅ Fetch Electricity Demand Data
+        //  Fetch Electricity Demand Data
         $.post("/get_all_peak_demand", { year, month }, function (data) {
             if (data.error) {
-                console.error("❌ Error fetching peak demand data:", data.error);
+                console.error(" Error fetching peak demand data:", data.error);
                 $("#electricityDemandChart").parent().html("<p class='text-danger'>No data available.</p>");
             } else {
                 updatePeakDemandChart(data.dates, data.peak_demand, data.day_peak_demand, data.off_peak_demand);
             }
         }).fail(function () {
-            console.error("❌ Failed to fetch peak demand data.");
+            console.error(" Failed to fetch peak demand data.");
         });
     
-        // ✅ Fetch Battery Revenue Data
+        //  Fetch Battery Revenue Data
         $.post("/get_battery_revenue", { year }, function (data) {
             if (data.error || !data.dates || data.dates.length === 0) {
-                console.error("❌ Error fetching battery revenue:", data.error);
+                console.error(" Error fetching battery revenue:", data.error);
                 $("#batteryRevenueChart").parent().html("<p class='text-danger'>No data available.</p>");
             } else {
-                console.log("✅ Battery Revenue Data Received:", data);
+                console.log(" Battery Revenue Data Received:", data);
                 updateChart("batteryRevenueChart", "Battery Revenue (USCts/kWh)", data.dates, data.revenue);
             }
         }).fail(function (xhr) {
-            console.error("❌ Failed to fetch battery revenue data. Status:", xhr.status, "Response:", xhr.responseText);
+            console.error(" Failed to fetch battery revenue data. Status:", xhr.status, "Response:", xhr.responseText);
         });
     
-        // ✅ Fetch Forecasted Solar Power Data
+        //  Fetch Forecasted Solar Power Data
         loadSolarPowerForecast(year, month);
     
-        // ✅ Ensure correct date format "YYYY-MM-DD"
+        // Ensure correct date format "YYYY-MM-DD"
         console.log("📡 Fetching Power Data for Date:", dateString, " Time Frame:", timeFrame);
     
-        // ✅ Fetch Optimized Power Data
+        //  Fetch Optimized Power Data
         $.post("/get_power_data", { date: dateString, time_frame: timeFrame }, function (data) {
             if (data.error) {
-                console.error("❌ Error fetching optimized power data:", data.error);
+                console.error(" Error fetching optimized power data:", data.error);
                 $("#optimizedDailyPowerChart").parent().html("<p class='text-danger'>No data available.</p>");
             } else {
-                console.log("✅ Optimized Power Data Received:", data);
+                console.log(" Optimized Power Data Received:", data);
                 updateChart("optimizedDailyPowerChart", "Optimized Daily Power Release (MWh)", data.dates, data.power_release);
             }
         }).fail(function (xhr) {
-            console.error("❌ Failed to fetch optimized power data. Status:", xhr.status, "Response:", xhr.responseText);
+            console.error(" Failed to fetch optimized power data. Status:", xhr.status, "Response:", xhr.responseText);
         });
     }
     
     
 
     function loadDropdowns() {
-        // ✅ Fetch Available Years
+        //  Fetch Available Years
         $.post("/get_available_years", function (data) {
             $("#year").empty();
             if (data.years && data.years.length > 0) {
@@ -178,7 +178,7 @@ localStorage.setItem("selectedTimeFrame", timeFrame);
             }
         });
 
-        // ✅ Populate Months
+        //  Populate Months
         let months = ["January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"];
         $("#month").empty();
@@ -196,20 +196,20 @@ localStorage.setItem("selectedTimeFrame", timeFrame);
 
         if (!year || !month || !location || !timeFrame) return;
         console.log(`📡 Fetching Solar Irradiance for: ${location}, Year: ${year}, Month: ${month}`);
-       // ✅ Ensure correct mapping of month names to numbers
+       //  Ensure correct mapping of month names to numbers
         let monthMapping = {
             "January": "01", "February": "02", "March": "03", "April": "04",
             "May": "05", "June": "06", "July": "07", "August": "08",
             "September": "09", "October": "10", "November": "11", "December": "12"
         };
 
-        // ✅ Convert month name to number (fixing the issue)
+        //  Convert month name to number (fixing the issue)
         let formattedMonth = monthMapping[month] || "01"; // Default to January if not found
         let dateString = `${year}-${formattedMonth}-01`; // Use first day of the month
         console.log("📡 Fetching Power Data for Date:", dateString, " Time Frame:", timeFrame);
         $("#loadingChart").show();
 
-        // ✅ Update Map for Best Location
+        //  Update Map for Best Location
         $.post("/get_best_location", { year: year }, function (data) {
             if (data.error) {
                 console.error("Error fetching best location:", data.error);
@@ -222,7 +222,7 @@ localStorage.setItem("selectedTimeFrame", timeFrame);
             console.error("Failed to fetch best location.");
         });
 
-        // ✅ Fetch Solar Irradiance Data for the selected location & time frame
+        //  Fetch Solar Irradiance Data for the selected location & time frame
         $.post("/get_irradiance_curve", { year, month, location, time_frame: timeFrame }, function (data) {
             if (data.error) {
                 console.error("Error fetching solar irradiance:", data.error);
@@ -236,63 +236,63 @@ localStorage.setItem("selectedTimeFrame", timeFrame);
         
             $.post("/get_future_solar_irradiance", { year: year, month: month, location: futureLocation }, function (data) {
                 if (data.error) {
-                    console.error("❌ Error fetching future solar irradiance:", data.error);
+                    console.error(" Error fetching future solar irradiance:", data.error);
                     $("#futureSolarIrradianceChart").parent().html("<p class='text-danger'>No data available.</p>");
                 } else {
                     updateChart("futureSolarIrradianceChart", "Future Solar Irradiance (W/m²)", data.dates, data.forecasted_irradiance);
                 }
             }).fail(function () {
-                console.error("❌ Failed to fetch future solar irradiance data.");
+                console.error(" Failed to fetch future solar irradiance data.");
             });
         }
         
         
 
-        // ✅ Fetch Electricity Demand Data
+        //  Fetch Electricity Demand Data
         $.post("/get_all_peak_demand", { year: year, month: month }, function (data) {
 
             if (data.error) {
-                console.error("❌ Error fetching peak demand data:", data.error);
+                console.error(" Error fetching peak demand data:", data.error);
                 $("#electricityDemandChart").parent().html("<p class='text-danger'>No data available.</p>");
             } else {
                 updatePeakDemandChart(data.dates, data.peak_demand, data.day_peak_demand, data.off_peak_demand);
             }
         }).fail(function () {
-            console.error("❌ Failed to fetch peak demand data.");
+            console.error(" Failed to fetch peak demand data.");
         });
         
 
-        // ✅ Fetch Battery Revenue Data
+        //  Fetch Battery Revenue Data
         $.post("/get_battery_revenue", { year: year }, function (data) {
             if (data.error || !data.dates || data.dates.length === 0) {
-                console.error("❌ Error fetching battery revenue:", data.error);
+                console.error(" Error fetching battery revenue:", data.error);
                 $("#batteryRevenueChart").parent().html("<p class='text-danger'>No data available.</p>");
             } else {
-                console.log("✅ Battery Revenue Data Received:", data);
+                console.log(" Battery Revenue Data Received:", data);
                 updateChart("batteryRevenueChart", "Battery Revenue (USCts/kWh)", data.dates, data.revenue);
 
             }
         }).fail(function (xhr) {
-            console.error("❌ Failed to fetch battery revenue data. Status:", xhr.status, "Response:", xhr.responseText);
+            console.error(" Failed to fetch battery revenue data. Status:", xhr.status, "Response:", xhr.responseText);
         });
         
-        // ✅ Fetch Forecasted Solar Power Data
+        //  Fetch Forecasted Solar Power Data
         loadSolarPowerForecast(year, month);
 
-        // ✅ Fetch Optimized Daily Power Data
-        // ✅ Ensure correct date format "YYYY-MM-DD"
+        //  Fetch Optimized Daily Power Data
+        //  Ensure correct date format "YYYY-MM-DD"
         
-        // ✅ Fix: Send correct parameter names matching Flask endpoint
+        //  Fix: Send correct parameter names matching Flask endpoint
         $.post("/get_power_data", { date: dateString, time_frame: timeFrame }, function (data) {
             if (data.error) {
-                console.error("❌ Error fetching optimized power data:", data.error);
+                console.error(" Error fetching optimized power data:", data.error);
                 $("#optimizedDailyPowerChart").parent().html("<p class='text-danger'>No data available.</p>");
             } else {
-                console.log("✅ Optimized Power Data Received:", data);
+                console.log(" Optimized Power Data Received:", data);
                 updateChart("optimizedDailyPowerChart", "Optimized Daily Power Release (MWh)", data.dates, data.power_release);
             }
         }).fail(function (xhr) {
-            console.error("❌ Failed to fetch optimized power data. Status:", xhr.status, "Response:", xhr.responseText);
+            console.error(" Failed to fetch optimized power data. Status:", xhr.status, "Response:", xhr.responseText);
         });
 
         
@@ -306,13 +306,13 @@ localStorage.setItem("selectedTimeFrame", timeFrame);
 function loadSolarPowerForecast(year, month) {
     $.post("/get_forecasted_solar_power", { year, month }, function (data) {
         if (data.error) {
-            console.error("❌ Error fetching forecasted solar power:", data.error);
+            console.error(" Error fetching forecasted solar power:", data.error);
             $("#solarPowerForecastChart").parent().html("<p class='text-danger'>No data available.</p>");
         } else {
             updateChart("solarPowerForecastChart", "Total Forecasted Solar Power (MW)", data.dates, data.solar_power);
         }
     }).fail(function () {
-        console.error("❌ Failed to fetch forecasted solar power data.");
+        console.error(" Failed to fetch forecasted solar power data.");
     });
 }
 
@@ -324,7 +324,7 @@ function loadSolarPowerForecast(year, month) {
         futureLocationDropdown.empty();
 
         if (data.error) {
-            console.error("❌ Error fetching future locations:", data.error);
+            console.error(" Error fetching future locations:", data.error);
             futureLocationDropdown.append(`<option disabled>${data.error}</option>`);
             return;
         }
@@ -338,7 +338,7 @@ function loadSolarPowerForecast(year, month) {
             futureLocationDropdown.append(`<option disabled>No Data Available</option>`);
         }
     }).fail(function () {
-        console.error("❌ Failed to fetch future locations.");
+        console.error(" Failed to fetch future locations.");
         $("#futureLocation").append(`<option disabled>Error Loading</option>`);
     });
 }
@@ -347,17 +347,17 @@ function loadSolarPowerForecast(year, month) {
 
     function updatePeakDemandChart(labels, peakData, dayPeakData, offPeakData) {
         if (!labels || labels.length === 0) {
-            console.warn("⚠️ No data available for demand chart.");
+            console.warn(" No data available for demand chart.");
             $("#electricityDemandChart").parent().html("<p class='text-danger'>No data available.</p>");
             return;
         }
     
         let chartContainer = $("#electricityDemandChart").parent(); 
-        chartContainer.html(`<canvas id="electricityDemandChart"></canvas>`); // ✅ Reset canvas
+        chartContainer.html(`<canvas id="electricityDemandChart"></canvas>`); //  Reset canvas
     
         let ctx = document.getElementById("electricityDemandChart").getContext("2d");
     
-        // ✅ Ensure the old chart instance is properly destroyed
+        //  Ensure the old chart instance is properly destroyed
         if (window.demandChart instanceof Chart) {
             window.demandChart.destroy();
         }
@@ -374,8 +374,8 @@ function loadSolarPowerForecast(year, month) {
                         borderColor: "red",
                         backgroundColor: "rgba(255, 0, 0, 0.1)",
                         fill: true,
-                        borderWidth: 4,  // ✅ Thicker line
-                        pointRadius: 1,   // ✅ Bigger dots
+                        borderWidth: 4,  //  Thicker line
+                        pointRadius: 1,   //  Bigger dots
                         pointHoverRadius: 8,
                         pointBackgroundColor: "red",
                     },
@@ -405,7 +405,7 @@ function loadSolarPowerForecast(year, month) {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // ✅ Allows better scaling
+                maintainAspectRatio: false, //  Allows better scaling
                 scales: {
                     x: { 
                         title: { display: true, text: "Date", font: { size: 16 } },
@@ -419,7 +419,7 @@ function loadSolarPowerForecast(year, month) {
                 },
                 plugins: {
                     legend: {
-                        labels: { font: { size: 16 } } // ✅ Bigger legend text
+                        labels: { font: { size: 16 } } //  Bigger legend text
                     }
                 }
             }
@@ -445,25 +445,25 @@ function loadSolarPowerForecast(year, month) {
     
         $.post("/get_best_location", { year: year }, function (data) {
             if (data.error) {
-                console.error("❌ Error fetching best location:", data.error);
+                console.error(" Error fetching best location:", data.error);
                 $("#bestLocation").text("No data available.");
                 $("#bestLocationDetails").html("<p class='text-danger'>No data found for the selected year.</p>");
             } else {
-                $("#bestLocation").text(`📍 ${data.location}`);
+                $("#bestLocation").text(` ${data.location}`);
                 $("#bestLocationDetails").html(`
-                    <p><strong>🌞 Forecasted Solar Irradiance:</strong> ${data.forecasted_irradiance.toFixed(2)} W/m²</p>
-                    <p><strong>📌 Location:</strong> ${data.location}</p>
+                    <p><strong> Forecasted Solar Irradiance:</strong> ${data.forecasted_irradiance.toFixed(2)} W/m²</p>
+                    <p><strong> Location:</strong> ${data.location}</p>
                 `);
                 updateMap(data.latitude, data.longitude, data.location);
             }
         }).fail(function () {
-            console.error("❌ Failed to fetch best location.");
+            console.error(" Failed to fetch best location.");
             $("#bestLocation").text("Error loading location.");
             $("#bestLocationDetails").html("<p class='text-danger'>Error retrieving location details.</p>");
         });
     }
     
-    // ✅ Call this function when the year dropdown changes
+    //  Call this function when the year dropdown changes
     $("#year").change(function () {
         loadBestLocation();
     });
@@ -483,13 +483,13 @@ function loadSolarPowerForecast(year, month) {
                 locationDropdown.append(`<option disabled>No Data</option>`);
             }
         }).fail(function () {
-            console.error("❌ Failed to fetch available locations.");
+            console.error(" Failed to fetch available locations.");
             $("#location").append(`<option disabled>Error Loading</option>`);
         });
     }
     
 
-    // ✅ Function to Reset a Chart Before Updating
+    //  Function to Reset a Chart Before Updating
 function resetChart(chartId) {
     if (chartInstances[chartId]) {
         chartInstances[chartId].destroy(); // Destroy the old chart instance
@@ -510,7 +510,7 @@ function resetChart(chartId) {
 
         let ctx = document.getElementById(chartId).getContext("2d");
 
-        // ✅ Destroy old chart before rendering new data
+        //  Destroy old chart before rendering new data
         if (chartInstances[chartId]) {
             chartInstances[chartId].destroy();
         }
