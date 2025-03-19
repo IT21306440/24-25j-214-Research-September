@@ -33,7 +33,7 @@
     </style>
 </head>
 <body>
-    <!-- ✅ Navbar -->
+    <!--  Navbar -->
     <nav class="navbar navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">Solar Dashboard</a>
@@ -49,7 +49,7 @@
     <div class="container mt-4">
         <h1 class="text-center">Energy Demand Trends</h1>
 
-        <!-- ✅ Dropdown Filters -->
+        <!--  Dropdown Filters -->
         <div class="row">
             <div class="col-md-6">
                 <label for="yearFilter" class="form-label">Select Year:</label>
@@ -61,7 +61,7 @@
             </div>
         </div>
 
-        <!-- ✅ Demand Summary Cards -->
+        <!--  Demand Summary Cards -->
         <div class="row text-center mt-4">
             <div class="col-md-4">
                 <div class="card bg-primary text-white">
@@ -92,7 +92,7 @@
             </div>
         </div>
 
-        <!-- ✅ Demand Charts -->
+        <!--  Demand Charts -->
         <div class="chart-container mt-4">
             <h3>Peak Demand</h3>
             <canvas id="peakDemandChart"></canvas>
@@ -107,7 +107,7 @@
         </div>
     </div>
 
-    <!-- ✅ Load JavaScript -->
+    <!--  Load JavaScript -->
     <script src="{{ url_for('static', filename='demand.js') }}"></script>
 </body>
 </html>

@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inverter Fault Detection</title>
 
-    <!-- ✅ Bootstrap & Libraries -->
+    <!--  Bootstrap & Libraries -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        /* ✅ Full Page Styling */
+        /*  Full Page Styling */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f8f9fa;
@@ -60,7 +60,7 @@
 </head>
 <body>
 
-    <!-- ✅ Navbar -->
+    <!--  Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="/">Solar Dashboard</a>
@@ -78,11 +78,11 @@
         </div>
     </nav>
 
-    <!-- ✅ Main Container -->
+    <!--  Main Container -->
     <div class="container">
         <h2 class="text-center text-primary fw-bold mb-4">🔧 Inverter Fault Detection Dashboard</h2>
 
-        <!-- ✅ Filter Form -->
+        <!--  Filter Form -->
         <form method="POST" class="bg-white p-4 rounded shadow">
             <h5 class="text-secondary">📌 Filter Data</h5>
             <div class="row g-3">
@@ -110,7 +110,7 @@
             </div>
         </form>
 
-        <!-- ✅ Graphs Display -->
+        <!--  Graphs Display -->
         <div id="graph-container" class="row g-4 mt-4">
             {% if graphs %}
                 {% for graph in graphs %}
@@ -134,7 +134,7 @@
             {% endif %}
         </div>
 
-        <!-- ✅ See More Button -->
+        <!--  See More Button -->
         {% if graphs|length > 6 %}
             <div class="see-more-btn">
                 <button id="see-more-btn" class="btn btn-outline-primary">See More Graphs ⬇️</button>
@@ -142,12 +142,12 @@
         {% endif %}
     </div>
 
-    <!-- ✅ Footer -->
+    <!--  Footer -->
     <div class="footer">
         <p class="m-0">© 2025 Solar Dashboard | Inverter Fault Detection</p>
     </div>
 
-    <!-- ✅ JavaScript for Lazy Loading & Pagination -->
+    <!--  JavaScript for Lazy Loading & Pagination -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let graphs = document.querySelectorAll(".graph-card");

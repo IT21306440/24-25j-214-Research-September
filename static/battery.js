@@ -10,7 +10,7 @@ $(document).ready(function () {
         monthFilter.append(new Option(month, month));
     });
 
-    // ✅ Fetch available years dynamically
+    //  Fetch available years dynamically
     $.post("/get_available_years", function (data) {
         if (data.years) {
             data.years.forEach(year => {
@@ -59,7 +59,7 @@ $(document).ready(function () {
         
         let datasets = [];
 
-        // ✅ Set specific labels for each chart separately
+        //  Set specific labels for each chart separately
         if (chartId === "chargingVsDischargingChart") {
             datasets = [
                 {
@@ -90,7 +90,7 @@ $(document).ready(function () {
         } else if (chartId === "optimizedDailyPowerChart") {
             datasets = [
                 {
-                    label: "Optimized Daily Power Release (kWh)",  // ✅ Manually Set Name for Power Release Chart
+                    label: "Optimized Daily Power Release (MWh)",  // ✅ Manually Set Name for Power Release Chart
                     data: dataset1,
                     borderColor: "purple",
                     backgroundColor: "rgba(128, 0, 128, 0.2)",

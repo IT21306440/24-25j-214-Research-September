@@ -13,10 +13,10 @@ from collections import OrderedDict
 
 app = Flask(__name__)
 
-# ✅ Define Data Path
+#  Define Data Path
 DATA_PATH = "C://Users//94772//Desktop//projects//Research Final Full System//Frontend//Frontend//data"
 
-# ✅ Function to Load CSV with Safe Error Handling
+#  Function to Load CSV with Safe Error Handling
 def load_csv(filename):
     filepath = os.path.join(DATA_PATH, filename)
     if os.path.exists(filepath):
@@ -28,11 +28,11 @@ def load_csv(filename):
         
         return df
     else:
-        print(f"⚠️ Warning: {filename} not found!")
+        print(f" Warning: {filename} not found!")
         return None
 
 
-# ✅ Load Data
+#  Load Data
 best_locations_df = load_csv("C://Users//94772//Desktop//projects//Research Final Full System//Frontend//Frontend//data//best_location_per_year.csv")
 forecast_results_df = load_csv("C://Users//94772//Desktop//projects//Research Final Full System//Frontend//Frontend//data//merged_forecast_2025_2027.csv")
 electricity_demand_df = load_csv("electricity_demand.csv")
@@ -47,7 +47,7 @@ off_peak_demand_df = load_csv("C://Users//94772//Desktop//projects//Research Fin
 future_solar_irradiance_df = load_csv("C://Users//94772//Desktop//projects//Research Final Full System//Frontend//Frontend//data//NewRandunifinal_combined_solar_irradiance.csv")  # Load future solar irradiance data
 forecasted_solar_power_df = load_csv("C://Users//94772//Desktop//projects//Research Final Full System//Frontend//Frontend//data//total_forecasted_solar_power_mwNew.csv")
 
-# ✅ Ensure `available_years` is properly initialized
+#  Ensure `available_years` is properly initialized
 available_years = sorted(best_locations_df["Year"].unique().tolist()) if best_locations_df is not None else []
 
 @app.route('/')
@@ -72,13 +72,13 @@ def demand():
 def maintainance():
     return render_template('maintainance.html')
 
-# ✅ Add Home Route to Fix 404 Error
+#  Add Home Route to Fix 404 Error
 @app.route("/dust")
 def dust():
     return render_template("dust.html")  # Serve the upload page instead of text
 
 
-# ✅ Add Upload Page Route
+#  Add Upload Page Route
 @app.route("/upload")
 def upload_page():
     return render_template("dust.html")
@@ -92,6 +92,8 @@ def get_available_locations():
         locations = sorted(forecast_results_df["Location"].unique().tolist())  # Sort for better UI
         return jsonify({"locations": locations})
     return jsonify({"error": "No locations available"}), 500
+
+
 
 @app.route('/get_months', methods=['POST'])
 def get_available_months():
@@ -142,14 +144,14 @@ def get_best_location():
     except ValueError:
         return jsonify({"error": "Invalid year format"}), 400
 
-    # ✅ Updated best locations dataset
+    #  Updated best locations dataset
     best_locations = {
         2025: {"Location": "Monaragala", "Forecasted Solar Irradiance": 5426.560108},
         2026: {"Location": "Munalthivu_Puththalam", "Forecasted Solar Irradiance": 5458.789756},
         2027: {"Location": "Hambantota", "Forecasted Solar Irradiance": 5445.905002},
     }
 
-    # ✅ Updated location coordinates (Added new locations)
+    #  Updated location coordinates (Added new locations)
     location_coordinates = {
         "Siyabalanduwa": {"lat": 6.8102, "lon": 81.5861},
         "Vavuniya": {"lat": 8.7515, "lon": 80.4976},
@@ -163,7 +165,7 @@ def get_best_location():
         "Munalthivu_Puththalam": {"lat": 8.0362, "lon": 79.8406},
     }
 
-    # ✅ Check if the requested year exists in best locations
+    # Check if the requested year exists in best locations
     if year not in best_locations:
         return jsonify({"error": f"No location data available for {year}"}), 404
 
@@ -171,7 +173,7 @@ def get_best_location():
     location_name = best_location["Location"]
     forecasted_irradiance = best_location["Forecasted Solar Irradiance"]
 
-    # ✅ Ensure the location has coordinates
+    #  Ensure the location has coordinates
     if location_name not in location_coordinates:
         return jsonify({"error": f"Coordinates not found for {location_name}"}), 500
 
@@ -197,11 +199,11 @@ def get_irradiance_curve():
     except ValueError:
         return jsonify({"error": "Invalid year format"}), 400
 
-    # ✅ Ensure the datasets are loaded
+    #  Ensure the datasets are loaded
     if best_locations_df is None or future_solar_irradiance_df is None:
         return jsonify({"error": "Required datasets not loaded"}), 500
 
-    # ✅ Get the best location for the selected year
+    #  Get the best location for the selected year
     best_location_row = best_locations_df[best_locations_df["Year"] == year]
 
     if best_location_row.empty:
@@ -209,18 +211,18 @@ def get_irradiance_curve():
 
     best_location = best_location_row.iloc[0]["Location"]  # Extract best location for the year
 
-    # ✅ Debugging: Ensure required columns exist in `future_solar_irradiance_df`
+    #  Debugging: Ensure required columns exist in `future_solar_irradiance_df`
     required_columns = ["Date", "Forecasted Solar Irradiance", "Location"]
     for col in required_columns:
         if col not in future_solar_irradiance_df.columns:
             return jsonify({"error": f"Missing column '{col}' in future_solar_irradiance dataset"}), 500
 
-    # ✅ Convert 'Date' column to datetime
+    #  Convert 'Date' column to datetime
     future_solar_irradiance_df["Date"] = pd.to_datetime(future_solar_irradiance_df["Date"], errors="coerce")
     future_solar_irradiance_df["Year"] = future_solar_irradiance_df["Date"].dt.year
     future_solar_irradiance_df["Month"] = future_solar_irradiance_df["Date"].dt.strftime("%B")  # Convert month to string
 
-    # ✅ Filter data for the selected year, month, and best location
+    #  Filter data for the selected year, month, and best location
     filtered_data = future_solar_irradiance_df[
         (future_solar_irradiance_df["Year"] == year) &
         (future_solar_irradiance_df["Month"] == month) &
@@ -230,7 +232,7 @@ def get_irradiance_curve():
     if filtered_data.empty:
         return jsonify({"error": f"No irradiance data found for {best_location} in {month} {year}"}), 404
 
-    # ✅ Ensure data is sorted correctly
+    #  Ensure data is sorted correctly
     filtered_data = filtered_data.sort_values(by="Date")
 
     return jsonify({
@@ -267,7 +269,7 @@ def get_solar_irradiance():
     forecast_results_df["Location"] = forecast_results_df["Location"].str.lower().str.strip()
     location = location.lower().strip()  # ✅ Convert input to lowercase
 
-    # ✅ Filter data for selected year, month, and location
+    #  Filter data for selected year, month, and location
     filtered_data = forecast_results_df[
     (forecast_results_df["Date"].dt.year == year) & 
     (forecast_results_df["Date"].dt.strftime("%B") == month) & 
@@ -311,18 +313,18 @@ def get_future_solar_irradiance():
     if future_solar_irradiance_df is None:
         return jsonify({"error": "Future solar irradiance data not available"}), 500
 
-    # ✅ Ensure correct column names
+    #  Ensure correct column names
     required_columns = ["Date", "Forecasted Solar Irradiance", "Location"]
     missing_columns = [col for col in required_columns if col not in future_solar_irradiance_df.columns]
     if missing_columns:
         return jsonify({"error": f"Missing columns in dataset: {missing_columns}"}), 500
 
-    # ✅ Convert 'Date' column to datetime
+    #  Convert 'Date' column to datetime
     future_solar_irradiance_df["Date"] = pd.to_datetime(future_solar_irradiance_df["Date"], errors="coerce")
     future_solar_irradiance_df["Year"] = future_solar_irradiance_df["Date"].dt.year
     future_solar_irradiance_df["Month"] = future_solar_irradiance_df["Date"].dt.strftime("%B")  # Month name
 
-    # ✅ Filter data for the selected year, month, and location
+    #  Filter data for the selected year, month, and location
     filtered_data = future_solar_irradiance_df[
         (future_solar_irradiance_df["Year"] == year) &
         (future_solar_irradiance_df["Month"] == month) &
@@ -332,7 +334,7 @@ def get_future_solar_irradiance():
     if filtered_data.empty:
         return jsonify({"error": f"No data found for {location} in {month} {year}"}), 404
 
-    # ✅ Ensure Data is sorted correctly
+    #  Ensure Data is sorted correctly
     filtered_data = filtered_data.sort_values(by="Date")
 
     return jsonify({
@@ -360,15 +362,15 @@ def get_forecasted_solar_power():
     if forecasted_solar_power_df is None:
         return jsonify({"error": "Forecasted solar power data not available"}), 500
 
-    # ✅ Convert 'Date' column to datetime if not already
+    #  Convert 'Date' column to datetime if not already
     if "Date" not in forecasted_solar_power_df.columns:
         return jsonify({"error": "Missing 'Date' column in dataset"}), 500
 
-    # ✅ Extract Year and Month from Date
+    #  Extract Year and Month from Date
     forecasted_solar_power_df["Year"] = forecasted_solar_power_df["Date"].dt.year
     forecasted_solar_power_df["Month"] = forecasted_solar_power_df["Date"].dt.strftime("%B")
 
-    # ✅ Filter Data by Year and Month
+    #  Filter Data by Year and Month
     filtered_data = forecasted_solar_power_df[
         (forecasted_solar_power_df["Year"] == year) & (forecasted_solar_power_df["Month"] == month)
     ]
@@ -376,7 +378,7 @@ def get_forecasted_solar_power():
     if filtered_data.empty:
         return jsonify({"error": f"No forecasted solar power data available for {month} {year}"}), 404
 
-    # ✅ Sort by Date for correct visualization
+    #  Sort by Date for correct visualization
     filtered_data = filtered_data.sort_values(by="Date")
 
     return jsonify({
@@ -438,7 +440,7 @@ def get_all_peak_demand():
 
 @app.route('/get_power_data', methods=['POST'])
 def get_power_data():
-    global optimized_daily_power_df  # ✅ Ensure global scope
+    global optimized_daily_power_df  #  Ensure global scope
 
     date_str = request.form.get('date')  # Expecting "YYYY-MM-DD"
     time_frame = request.form.get('time_frame')
@@ -446,20 +448,20 @@ def get_power_data():
     if not date_str or not time_frame:
         return jsonify({"error": "Missing date or time frame parameter"}), 400
 
-    # ✅ Ensure the dataset is loaded
+    #  Ensure the dataset is loaded
     if optimized_daily_power_df is None:
         return jsonify({"error": "Power data not available"}), 500
 
-    # ✅ Check for required columns
+    #  Check for required columns
     required_columns = ["Date", "Optimized_Daily_MW"]
     missing_columns = [col for col in required_columns if col not in optimized_daily_power_df.columns]
     if missing_columns:
         return jsonify({"error": f"Required columns missing in dataset: {missing_columns}"}), 500
 
-    # ✅ Convert 'Date' column to datetime format
+    #  Convert 'Date' column to datetime format
     optimized_daily_power_df["Date"] = pd.to_datetime(optimized_daily_power_df["Date"], errors="coerce")
 
-    # ✅ Convert input date to datetime
+    #  Convert input date to datetime
     try:
         selected_date = pd.to_datetime(date_str, format='%Y-%m-%d', errors='coerce')
         if pd.isnull(selected_date):
@@ -467,7 +469,7 @@ def get_power_data():
     except ValueError:
         return jsonify({"error": "Invalid date format. Expected format: YYYY-MM-DD"}), 400
 
-    # ✅ Filtering based on time frame
+    #  Filtering based on time frame
     if time_frame == "daily":
         filtered_data = optimized_daily_power_df[optimized_daily_power_df["Date"] == selected_date]
     elif time_frame == "monthly":
@@ -499,21 +501,21 @@ def get_optimized_daily_power():
     if optimized_daily_power_df is None:
         return jsonify({"error": "Daily power release data not available"}), 500
 
-    # ✅ Rename "Day" to "Date" if needed (Only if it exists)
+    #  Rename "Day" to "Date" if needed (Only if it exists)
     if "Day" in optimized_daily_power_df.columns and "Date" not in optimized_daily_power_df.columns:
         optimized_daily_power_df = optimized_daily_power_df.rename(columns={"Day": "Date"})
 
-    # ✅ Convert "Date" to datetime format safely (Avoid duplicate conversions)
+    #  Convert "Date" to datetime format safely (Avoid duplicate conversions)
     if not pd.api.types.is_datetime64_any_dtype(optimized_daily_power_df["Date"]):
         optimized_daily_power_df["Date"] = pd.to_datetime(optimized_daily_power_df["Date"], errors="coerce")
 
-    # ✅ Drop invalid dates
+    #  Drop invalid dates
     optimized_daily_power_df = optimized_daily_power_df.dropna(subset=["Date"])
 
-    # ✅ Extract Month Name
+    #  Extract Month Name
     optimized_daily_power_df["Month"] = optimized_daily_power_df["Date"].dt.strftime("%B")
 
-    # ✅ Filter by month (case-insensitive)
+    #  Filter by month (case-insensitive)
     filtered_data = optimized_daily_power_df if month.lower() == "all" else \
         optimized_daily_power_df[optimized_daily_power_df["Month"].str.lower() == month.lower()]
 
@@ -546,7 +548,7 @@ def get_charging_vs_discharging():
     charging_vs_discharging_df["Date"] = pd.to_datetime(charging_vs_discharging_df["Date"], errors="coerce")
     charging_vs_discharging_df["Month"] = charging_vs_discharging_df["Date"].dt.strftime("%B")
 
-    # ✅ Aggregate by Date instead of plotting every hour
+    #  Aggregate by Date instead of plotting every hour
     daily_data = charging_vs_discharging_df.groupby(charging_vs_discharging_df["Date"].dt.date).agg({
         "Charging_Cost (USCts/kWh)": "sum",
         "Discharging_Revenue (USCts/kWh)": "sum"
@@ -559,9 +561,9 @@ def get_charging_vs_discharging():
     else:
         filtered_data = daily_data
 
-    # ✅ If no data found, fallback to **January**
+    #  If no data found, fallback to **January**
     if filtered_data.empty:
-        print(f"⚠️ No data found for {month}. Falling back to January.")
+        print(f" No data found for {month}. Falling back to January.")
         fallback_data = daily_data[daily_data["Month"] == "January"]
         if fallback_data.empty:
             return jsonify({"dates": ["No Data"], "charging_cost": [0], "discharging_revenue": [0]})
@@ -607,9 +609,9 @@ def get_battery_revenue():
     # Filter data based on selected year and month
     filtered_data = battery_revenue_df[(battery_revenue_df["Year"] == year) & (battery_revenue_df["Month"] == month)]
 
-    # ✅ If no data found, fallback to **January**
+    # If no data found, fallback to **January**
     if filtered_data.empty:
-        print(f"⚠️ No data found for {month}. Falling back to January.")
+        print(f" No data found for {month}. Falling back to January.")
         fallback_data = battery_revenue_df[battery_revenue_df["Month"] == "January"]
         if fallback_data.empty:
             return jsonify({"dates": ["No Data"], "revenue": [0]})
