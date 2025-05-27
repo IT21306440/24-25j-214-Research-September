@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Demand Trend</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --ceb-primary: #003087; /* Dark blue from the image */
+            --ceb-secondary: #0055A4; /* Lighter blue for hover effects */
+            --ceb-accent: #FFC107; /* Yellow for brand and active links */
+            --ceb-light: #FFFFFF; /* White background */
+            --ceb-dark: #000000; /* Dark text */
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: var(--ceb-light);
+            color: var(--ceb-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: var(--ceb-primary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 0.5rem 1rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--ceb-accent) !important;
+        }
+
+        .nav-link {
+            color: var(--ceb-light) !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--ceb-accent) !important;
+        }
+
+        .nav-link.active {
+            color: var(--ceb-accent) !important;
+            font-weight: 600;
+        }
+
+        .dropdown-menu {
+            background-color: var(--ceb-primary);
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .dropdown-item {
+            color: var(--ceb-light);
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--ceb-secondary);
+            color: var(--ceb-accent);
+        }
+
+        .dropdown-item.active {
+            background-color: var(--ceb-secondary);
+            color: var(--ceb-accent);
+            font-weight: 600;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--ceb-light);
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            color: var(--ceb-accent);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ceb-dark);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .filters {
+            background-color: var(--ceb-light);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--ceb-dark);
+        }
+
+        select {
+            padding: 0.5rem;
+            border: 1px solid var(--ceb-secondary);
+            border-radius: 5px;
+            background-color: var(--ceb-light);
+            color: var(--ceb-dark);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--ceb-accent);
+        }
+
+        .chart-container {
+            position: relative;
+            background-color: var(--ceb-light);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+        }
+
+        #demandChart {
+            width: 100%;
+            height: 600px;
+        }
+
+        #loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: var(--ceb-dark);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <a class="navbar-brand" href="/">Ceylon Electricity Board <span>Solar Dashboard</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Solar Locations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/battery">Battery Optimization</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/integrated">Integrated System</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="energyDemandDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Energy Demand Trends
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="energyDemandDropdown">
+                            <li><a class="dropdown-item active" href="/demand">Demand Trend</a></li>
+                            <li><a class="dropdown-item" href="/demandcurve">Demand Curve</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="maintenanceDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Maintenance
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="maintenanceDropdown">
+                            <li><a class="dropdown-item" href="/maintainance">Image Classification</a></li>
+                            <li><a class="dropdown-item" href="/dust">Solar Maintenance</a></li>
+                            <li><a class="dropdown-item" href="/inverter">Inverter Details</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Energy Demand Trend</h1>
+        <div class="filters">
+            <label for="yearSelect">Year:</label>
+            <select id="yearSelect">
+                <option value="">Select Year</option>
+            </select>
+            <label for="monthSelect">Month:</label>
+            <select id="monthSelect">
+                <option value="">Select Month</option>
+            </select>
+            <label for="daySelect">Day:</label>
+            <select id="daySelect">
+                <option value="">Select Day</option>
+            </select>
+        </div>
+        <div class="chart-container">
+            <div id="loading">Loading...</div>
+            <canvas id="demandChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <!-- Load demandcurve.js -->
+    <script src="{{ url_for('static', filename='demandcurve.js') }}"></script>
+</body>
+</html>
